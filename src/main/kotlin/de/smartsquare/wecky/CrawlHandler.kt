@@ -1,29 +1,27 @@
 package de.smartsquare.wecky
 
 import com.amazonaws.services.lambda.runtime.Context
-import com.amazonaws.services.lambda.runtime.RequestHandler
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.amazonaws.services.lambda.runtime.RequestStreamHandler
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.smartsquare.wecky.crawler.WebsiteCrawler
 import de.smartsquare.wecky.domain.Website
 import de.smartsquare.wecky.dynamo.DynamoDbClient
+import java.io.InputStream
+import java.io.OutputStream
 
-class CrawlHandler : RequestHandler<Website, Any> {
+class CrawlHandler : RequestStreamHandler {
 
-    override fun handleRequest(website: Website?, ctx: Context?): Any {
+    val mapper = jacksonObjectMapper()
 
-        val crawler = WebsiteCrawler(website!!.url)
+    override fun handleRequest(input: InputStream, output: OutputStream, ctx: Context?) {
+        val website = mapper.readValue(input, Website::class.java)
+        val crawler = WebsiteCrawler(website.url)
         val dynamo = DynamoDbClient(DynamoDbClient.create())
 
         val hashedWebsite = crawler.crawlPage()
         dynamo.write(hashedWebsite)
 
-        val headers = hashMapOf("Content-Type" to "application/json")
-
-        val objectMapper = ObjectMapper()
-        val websiteJson = objectMapper.writeValueAsString(hashedWebsite)
-        return GatewayResponse(
-                objectMapper.writeValueAsString(mapOf("Output" to websiteJson)),
-                headers,
-                200)
+        val websiteJson = mapper.writeValueAsString(hashedWebsite)
+        mapper.writeValue(output, mapOf("Output" to websiteJson))
     }
 }
