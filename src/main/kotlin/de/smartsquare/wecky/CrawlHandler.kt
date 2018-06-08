@@ -2,10 +2,10 @@ package de.smartsquare.wecky
 
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestHandler
+import com.fasterxml.jackson.databind.ObjectMapper
 import de.smartsquare.wecky.crawler.WebsiteCrawler
 import de.smartsquare.wecky.domain.Website
 import de.smartsquare.wecky.dynamo.DynamoDbClient
-import org.json.JSONObject
 
 class CrawlHandler : RequestHandler<Website, Any> {
 
@@ -19,8 +19,10 @@ class CrawlHandler : RequestHandler<Website, Any> {
 
         val headers = hashMapOf("Content-Type" to "application/json")
 
+        val objectMapper = ObjectMapper()
+        val websiteJson = objectMapper.writeValueAsString(hashedWebsite)
         return GatewayResponse(
-                JSONObject().put("Output", JSONObject.valueToString(hashedWebsite)).toString(),
+                objectMapper.writeValueAsString(mapOf("Output" to websiteJson)),
                 headers,
                 200)
     }
