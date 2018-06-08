@@ -7,12 +7,11 @@ import de.smartsquare.wecky.domain.Website
 import de.smartsquare.wecky.dynamo.DynamoDbClient
 import org.json.JSONObject
 
-class CrawlHandler : RequestHandler<Any, Any> {
+class CrawlHandler : RequestHandler<Website, Any> {
 
-    override fun handleRequest(input: Any?, ctx: Context?): Any {
+    override fun handleRequest(website: Website?, ctx: Context?): Any {
 
-        val website: Website = input as Website
-        val crawler = WebsiteCrawler(website.url)
+        val crawler = WebsiteCrawler(website!!.url)
         val dynamo = DynamoDbClient(DynamoDbClient.create())
 
         val hashedWebsite = crawler.crawlPage()
