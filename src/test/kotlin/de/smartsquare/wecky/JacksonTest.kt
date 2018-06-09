@@ -5,7 +5,7 @@ import de.smartsquare.wecky.domain.Website
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 
-class JacksonTest {
+internal class JacksonTest {
 
     val mapper = jacksonObjectMapper()
 
