@@ -9,7 +9,6 @@ import com.amazonaws.services.dynamodbv2.document.utils.ValueMap
 import com.amazonaws.services.dynamodbv2.model.*
 import de.smartsquare.wecky.domain.HashedWebsite
 import org.slf4j.LoggerFactory
-import java.math.BigDecimal
 import java.time.Instant
 
 
@@ -17,7 +16,7 @@ class DynamoDbClient(val dynamoDB: DynamoDB) {
 
     companion object Factory {
         fun create(): DynamoDB = DynamoDB(AmazonDynamoDBClientBuilder.standard()
-                .withRegion(Regions.US_EAST_2)
+                .withRegion(Regions.EU_CENTRAL_1)
                 .build())
 
         val log = LoggerFactory.getLogger(DynamoDbClient::class.java.simpleName)
@@ -59,12 +58,16 @@ class DynamoDbClient(val dynamoDB: DynamoDB) {
     }
 
     fun write(hashedWebsite: HashedWebsite) {
-
+        try {
+            createInitialTable()
+        } catch (ex: ResourceInUseException) {
+            // ignore
+        }
+        
         val table = dynamoDB.getTable(tableName)
 
         val url = hashedWebsite.url
         val hash = hashedWebsite.hash
-        val crawlMillis = Instant.now().toEpochMilli()
 
         val key = "$url $hash"
 
@@ -72,36 +75,31 @@ class DynamoDbClient(val dynamoDB: DynamoDB) {
                 .withPrimaryKey("id_url", key, "id_hash", hash)
                 .withString("url", url)
                 .withInt("hash", hash)
-                .withLong("crawlDate", crawlMillis))
+                .withLong("crawlDate", hashedWebsite.crawlDate.toEpochMilli()))
 
 
         log.info("PutItem succeeded: $url ")
     }
 
-//    fun readItem(name: String): List<Whisky> {
-//        val table = dynamoDB.getTable(tableName)
-//
-//        val valueMap: ValueMap = ValueMap()
-//                .withString(":name", name)
-//        // .withLong(":from", Long.MIN_VALUE)
-//        // .withLong(":to", Instant.now().plusSeconds(1000).toEpochMilli())
-//
-//        val spec = QuerySpec()
-//                .withKeyConditionExpression("id_name = :name") //AND id_scrapingDate between :from and :to
-//                .withValueMap(valueMap)
-//
-//        return table.query(spec).map { item ->
-//            Whisky(
-//                    item.getString("whiskyName"),
-//                    item.getString("description"),
-//                    item.getDouble("alcohol"),
-//                    item.getDouble("liter"),
-//                    BigDecimal.valueOf(item.getDouble("price")),
-//                    Instant.ofEpochMilli(item.getString("id_scrapingDate").toLong())
-//            )
-//        }.toList()
-//
-//    }
+    fun readItem(url: String): Iterable<HashedWebsite> {
+        val table = dynamoDB.getTable(tableName)
+
+        val valueMap: ValueMap = ValueMap()
+                .withString(":url", url)
+
+        val spec = QuerySpec()
+                .withKeyConditionExpression("id_url = :url")
+                .withValueMap(valueMap)
+
+        return table.query(spec).map { item ->
+            HashedWebsite(
+                    item.getString("url"),
+                    item.getInt("hash"),
+                    Instant.ofEpochMilli(item.getLong("crawlDate"))
+            )
+        }.toList()
+
+    }
 
 
 }

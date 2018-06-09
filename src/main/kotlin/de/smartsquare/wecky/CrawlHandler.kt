@@ -1,9 +1,14 @@
 package de.smartsquare.wecky
 
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper
+import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput
+import com.amazonaws.services.dynamodbv2.model.ResourceInUseException
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.smartsquare.wecky.crawler.WebsiteCrawler
+import de.smartsquare.wecky.domain.HashedWebsite
 import de.smartsquare.wecky.domain.Website
 import de.smartsquare.wecky.dynamo.DynamoDbClient
 import java.io.InputStream

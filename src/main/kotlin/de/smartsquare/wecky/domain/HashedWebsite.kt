@@ -1,8 +1,5 @@
 package de.smartsquare.wecky.domain
 
-import org.jsoup.nodes.Document
+import java.time.Instant
 
-class HashedWebsite(val doc: Document) {
-    val url: String = doc.location()
-    val hash: Int = doc.toString().hashCode()
-}
+data class HashedWebsite(val url: String, val hash: Int, val crawlDate: Instant = Instant.now())
