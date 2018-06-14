@@ -12,8 +12,10 @@ Resources:
   TriggerCrawl:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: HelloWorldHandler
+      Handler: de.smartsquare.wecky.CrawlHandler
       Runtime: java8
+      CodeUri: target/wecky-crawl-1.0.jar
+      Timeout: 180
       Role:
         Fn::ImportValue:
           !Join ['-', [!Ref 'ProjectId', !Ref 'AWS::Region', 'LambdaTrustRole']]
