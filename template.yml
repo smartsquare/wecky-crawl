@@ -15,7 +15,6 @@ Resources:
       FunctionName: Wecky-CrawlWebsite
       Handler: de.smartsquare.wecky.CrawlHandler
       Runtime: java8
-      CodeUri: target/wecky-crawl-1.0.jar
       Timeout: 180
       Role:
         Fn::ImportValue:
