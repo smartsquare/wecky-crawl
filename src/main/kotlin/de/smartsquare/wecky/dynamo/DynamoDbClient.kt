@@ -46,6 +46,8 @@ class DynamoDbClient(val dynamoDB: AmazonDynamoDB) {
     }
 
     fun readItem(id: String): HashedWebsite? {
+        createInitialTable()
+
         val getItemRequest = GetItemRequest()
                 .withKey(mapOf("id" to AttributeValue(id)))
                 .withTableName(tableName)
