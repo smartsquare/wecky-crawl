@@ -6,7 +6,6 @@ import de.smartsquare.wecky.domain.HashedWebsite
 import org.slf4j.LoggerFactory
 import java.time.Instant
 
-
 class DynamoDbClient(val dynamoDB: AmazonDynamoDB) {
 
     companion object Factory {

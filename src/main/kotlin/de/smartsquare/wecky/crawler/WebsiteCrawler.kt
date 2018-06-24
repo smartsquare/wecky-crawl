@@ -11,5 +11,6 @@ class WebsiteCrawler(val jsoup: JsoupWrapper = JsoupWrapper()) {
         val docAsString = doc.toString()
         return HashedWebsite(website.id, doc.location(), docAsString)
     }
+
 }
 

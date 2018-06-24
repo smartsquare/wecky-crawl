@@ -10,23 +10,23 @@ const val QUEUE_NAME: String = "WeckyQueue"
 
 class SqsPublisher {
 
-    fun publishMessage(msg: String) {
+    fun publishMessage(message: String) {
         val sqs = AmazonSQSClientBuilder.defaultClient()
 
         val queueUrlResult = try {
             sqs.getQueueUrl(QUEUE_NAME).queueUrl
         } catch (ex: AmazonSQSException) {
-            val create_request = CreateQueueRequest(QUEUE_NAME)
+            val queueRequest = CreateQueueRequest(QUEUE_NAME)
                     .addAttributesEntry("DelaySeconds", "60")
                     .addAttributesEntry("MessageRetentionPeriod", "86400")
-            val createQueueResult = sqs.createQueue(create_request)
-            createQueueResult.queueUrl
+            sqs.createQueue(queueRequest).queueUrl
         }
 
-        val send_msg_request = SendMessageRequest()
+        val messageRequest = SendMessageRequest()
                 .withQueueUrl(queueUrlResult)
-                .withMessageBody(msg)
+                .withMessageBody(message)
                 .withDelaySeconds(5)
-        sqs.sendMessage(send_msg_request)
+        sqs.sendMessage(messageRequest)
     }
+
 }

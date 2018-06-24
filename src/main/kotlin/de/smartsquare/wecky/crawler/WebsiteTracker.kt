@@ -19,6 +19,5 @@ class WebsiteTracker(val dynamoDbClient: DynamoDbClient, val sqsPublisher: SqsPu
             dynamoDbClient.write(newHashed)
             sqsPublisher.publishMessage(mapper.writeValueAsString(WebsiteChange(website.id, newHashed.content)))
         }
-        // else do nothing :)
     }
 }
