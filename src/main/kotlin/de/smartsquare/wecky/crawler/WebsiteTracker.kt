@@ -12,7 +12,7 @@ class WebsiteTracker(val dynamoDbClient: DynamoDbClient, val sqsPublisher: SqsPu
     val mapper = jacksonObjectMapper()
 
     fun track(website: Website, newHashed: HashedWebsite) {
-        val oldHashed = dynamoDbClient.readItem(newHashed.url)
+        val oldHashed = dynamoDbClient.readItem(newHashed.id)
         val changed = oldHashed?.hash != newHashed.hash
 
         if (changed) {
