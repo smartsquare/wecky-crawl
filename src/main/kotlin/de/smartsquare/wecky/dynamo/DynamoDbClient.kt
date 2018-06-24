@@ -52,15 +52,17 @@ class DynamoDbClient(val dynamoDB: AmazonDynamoDB) {
                 .withKey(mapOf("id" to AttributeValue(id)))
                 .withTableName(tableName)
 
-        val item = dynamoDB.getItem(getItemRequest).item ?: return null
-
-        return HashedWebsite(
-                item.get("id")!!.s,
-                item.get("url")!!.s,
-                item.get("content")!!.s,
-                item.get("hash")!!.s.toInt(),
-                Instant.ofEpochMilli(item.get("crawlDate")!!.s.toLong())
-        )
+        try {
+            val item = dynamoDB.getItem(getItemRequest).item ?: return null
+            return HashedWebsite(
+                    item.get("id")!!.s,
+                    item.get("url")!!.s,
+                    item.get("content")!!.s,
+                    item.get("hash")!!.s.toInt(),
+                    Instant.ofEpochMilli(item.get("crawlDate")!!.s.toLong()))
+        } catch (ex: ResourceNotFoundException) {
+            return null
+        }
     }
 
 
