@@ -30,10 +30,10 @@ internal class WebsiteTrackerTest {
     @Test
     fun do_nothing_for_unchanged_website() {
         val website = Website("foobar", "foobar.de")
-        val hashedWebsite = HashedWebsite("foobar.de", 4711)
-        val previousHashed = HashedWebsite("foobar.de", 4711)
+        val hashedWebsite = HashedWebsite("4711", "foobar.de", "<html/>")
+        val previousHashed = HashedWebsite("4711", "foobar.de", "<html/>")
 
-        every { dynamoDbClient.readItem(hashedWebsite.url) } returns listOf(previousHashed)
+        every { dynamoDbClient.readItem(hashedWebsite.url) } returns previousHashed
 
         tracker.track(website, hashedWebsite)
 
@@ -44,10 +44,10 @@ internal class WebsiteTrackerTest {
     @Test
     fun persist_and_publish_changed_website() {
         val website = Website("foobar", "foobar.de")
-        val hashedWebsite = HashedWebsite("foobar.de", 4711)
-        val previousHashed = HashedWebsite("foobar.de", 1234)
+        val hashedWebsite = HashedWebsite("4711", "foobar.de", "<html/>")
+        val previousHashed = HashedWebsite("4711", "foobar.de", "<html><body/></html>")
 
-        every { dynamoDbClient.readItem(hashedWebsite.url) } returns listOf(previousHashed)
+        every { dynamoDbClient.readItem(hashedWebsite.url) } returns previousHashed
 
         tracker.track(website, hashedWebsite)
 

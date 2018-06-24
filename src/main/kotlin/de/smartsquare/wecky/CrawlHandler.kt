@@ -1,5 +1,7 @@
 package de.smartsquare.wecky
 
+import com.amazonaws.client.builder.AwsClientBuilder
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -18,12 +20,16 @@ class CrawlHandler : RequestStreamHandler {
     override fun handleRequest(input: InputStream, output: OutputStream, ctx: Context?) {
         val website = mapper.readValue(input, Website::class.java)
 
-        val crawler = WebsiteCrawler(website.url)
-        val dynamo = DynamoDbClient(DynamoDbClient.create())
+
+        val amazonDynamoDB = AmazonDynamoDBClient.builder()
+                .withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration("http://localhost:8000", "us-east-1"))
+                .build()
+        val dynamo = DynamoDbClient(amazonDynamoDB)
         val sqs = SqsPublisher()
         val tracker = WebsiteTracker(dynamo, sqs)
+        val crawler = WebsiteCrawler()
 
-        val hashedWebsite = crawler.crawlPage()
+        val hashedWebsite = crawler.crawlPage(website)
         tracker.track(website, hashedWebsite)
     }
 }

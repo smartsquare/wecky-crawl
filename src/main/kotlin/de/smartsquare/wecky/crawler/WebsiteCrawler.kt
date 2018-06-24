@@ -1,13 +1,15 @@
 package de.smartsquare.wecky.crawler
 
 import de.smartsquare.wecky.domain.HashedWebsite
+import de.smartsquare.wecky.domain.Website
 
-class WebsiteCrawler(val baseUrl: String, val jsoup: JsoupWrapper = JsoupWrapper()) {
+class WebsiteCrawler(val jsoup: JsoupWrapper = JsoupWrapper()) {
 
-    fun crawlPage(): HashedWebsite {
+    fun crawlPage(website: Website): HashedWebsite {
 
-        val doc = jsoup.readWebPage(baseUrl)
-        return HashedWebsite(doc.location(), doc.toString().hashCode())
+        val doc = jsoup.readWebPage(website.url)
+        val docAsString = doc.toString()
+        return HashedWebsite(website.id, doc.location(), docAsString)
     }
 }
 
