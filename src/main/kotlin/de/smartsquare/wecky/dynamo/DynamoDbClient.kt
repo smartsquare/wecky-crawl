@@ -1,9 +1,6 @@
 package de.smartsquare.wecky.dynamo
 
-import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
-import com.amazonaws.services.dynamodbv2.document.DynamoDB
 import com.amazonaws.services.dynamodbv2.model.*
 import de.smartsquare.wecky.domain.HashedWebsite
 import org.slf4j.LoggerFactory
@@ -13,10 +10,6 @@ import java.time.Instant
 class DynamoDbClient(val dynamoDB: AmazonDynamoDB) {
 
     companion object Factory {
-        fun create(): DynamoDB = DynamoDB(AmazonDynamoDBClientBuilder.standard()
-                .withRegion(Regions.EU_CENTRAL_1)
-                .build())
-
         val log = LoggerFactory.getLogger(DynamoDbClient::class.java.simpleName)
         val tableName = "WebsiteHashes"
     }
