@@ -16,7 +16,7 @@ Resources:
       CodeUri: target/wecky-crawl-1.0.jar
       Environment:
         Variables:
-          WECKY_LOCAL: true
+          DYNDB_LOCAL: http://host.docker.internal:8000
       Handler: de.smartsquare.wecky.CrawlHandler
       Runtime: java8
       Timeout: 180

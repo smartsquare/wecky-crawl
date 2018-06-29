@@ -7,9 +7,10 @@ import de.smartsquare.wecky.dynamo.DynamoDbClient
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 
-//@Ignore("Needs local dynamodb")
+@Ignore("Needs local dynamodb")
 class DynamoDbClientTest {
 
     private var dynamo: DynamoDbClient? = null
