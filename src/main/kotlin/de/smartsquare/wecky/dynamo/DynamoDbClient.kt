@@ -14,11 +14,10 @@ class DynamoDbClient(val dynamoDB: AmazonDynamoDB) {
     }
 
     fun createInitialTable() {
-        log.info("Attempting to create table [$tableName]; please wait...")
-
         try {
             dynamoDB.describeTable(tableName)
         } catch (ex: ResourceNotFoundException) {
+            log.info("Attempting to create table [$tableName]; please wait...")
             val request = CreateTableRequest()
                     .withAttributeDefinitions(AttributeDefinition("id", ScalarAttributeType.S))
                     .withKeySchema(KeySchemaElement("id", KeyType.HASH))
@@ -27,6 +26,7 @@ class DynamoDbClient(val dynamoDB: AmazonDynamoDB) {
                     .withTableName(tableName)
 
             dynamoDB.createTable(request)
+            log.info("Table [$tableName] created successfully")
         }
     }
 
@@ -41,7 +41,7 @@ class DynamoDbClient(val dynamoDB: AmazonDynamoDB) {
 
         dynamoDB.putItem(tableName, item)
 
-        log.info("PutItem succeeded: $hashedWebsite.id")
+        log.info("Stored new snapshot of website [${hashedWebsite.id}]")
     }
 
     fun readItem(id: String): HashedWebsite? {

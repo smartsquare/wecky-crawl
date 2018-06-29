@@ -11,27 +11,32 @@ import de.smartsquare.wecky.crawler.WebsiteCrawler
 import de.smartsquare.wecky.crawler.WebsiteTracker
 import de.smartsquare.wecky.domain.Website
 import de.smartsquare.wecky.dynamo.DynamoDbClient
-import de.smartsquare.wecky.sqs.SqsPublisher
+import org.slf4j.LoggerFactory
 import java.io.InputStream
 import java.io.OutputStream
 
 class CrawlHandler : RequestStreamHandler {
 
-    val mapper = jacksonObjectMapper()
+    companion object Factory {
+        val log = LoggerFactory.getLogger(CrawlHandler::class.java.simpleName)
+        val mapper = jacksonObjectMapper()
+    }
 
     override fun handleRequest(input: InputStream, output: OutputStream, ctx: Context?) {
         val website = mapper.readValue(input, Website::class.java)
 
         // used for local test with sam
-        val isLocalTest = System.getenv("WECKY_LOCAL")?.isNotEmpty() ?: false
+        val dyndbLocal = System.getenv("DYNDB_LOCAL")
         val amazonDynamoDB =
-                if (isLocalTest) {
-                    System.setProperty("aws.accessKeyId", "test1")
-                    System.setProperty("aws.secretKey", "test231")
+                if (dyndbLocal?.isNotEmpty() ?: false) {
+                    log.info("Triggered local dev mode using local DynamoDB at [$dyndbLocal]")
+                    System.setProperty("aws.accessKeyId", "foo")
+                    System.setProperty("aws.secretKey", "bar")
                     AmazonDynamoDBClient.builder()
-                            .withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration("http://host.docker.internal:8000", "us-east-1"))
+                            .withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration(dyndbLocal, "us-east-1"))
                             .build()
                 } else {
+                    log.info("Using production DynamoDB at eu_central_1")
                     AmazonDynamoDBClientBuilder.standard()
                             .withRegion(Regions.EU_CENTRAL_1)
                             .build()
@@ -39,8 +44,7 @@ class CrawlHandler : RequestStreamHandler {
         val dynamo = DynamoDbClient(amazonDynamoDB)
 
         val crawler = WebsiteCrawler()
-        val sqs = SqsPublisher()
-        val tracker = WebsiteTracker(dynamo, sqs)
+        val tracker = WebsiteTracker(dynamo)
 
         val hashedWebsite = crawler.crawlPage(website)
         tracker.track(website, hashedWebsite)
