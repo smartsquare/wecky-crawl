@@ -4,18 +4,18 @@ import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import de.smartsquare.wecky.domain.HashedWebsite
 import de.smartsquare.wecky.dynamo.DynamoDbClient
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
-import org.junit.Before
 import org.junit.Ignore
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 @Ignore("Needs local dynamodb")
 class DynamoDbClientTest {
 
     private var dynamo: DynamoDbClient? = null
 
-    @Before
+    @BeforeEach
     fun setUp() {
         val amazonDynamoDBClient = AmazonDynamoDBClient.builder()
                 .withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration("http://localhost:8000", "us-east-1"))
