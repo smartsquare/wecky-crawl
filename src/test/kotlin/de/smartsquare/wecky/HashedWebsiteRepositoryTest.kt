@@ -3,7 +3,7 @@ package de.smartsquare.wecky
 import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import de.smartsquare.wecky.domain.HashedWebsite
-import de.smartsquare.wecky.dynamo.DynamoDbClient
+import de.smartsquare.wecky.dynamo.HashedWebsiteRepository
 import org.junit.Ignore
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -11,9 +11,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 @Ignore("Needs local dynamodb")
-class DynamoDbClientTest {
+class HashedWebsiteRepositoryTest {
 
-    private var dynamo: DynamoDbClient? = null
+    private var dynamo: HashedWebsiteRepository? = null
 
     @BeforeEach
     fun setUp() {
@@ -23,7 +23,7 @@ class DynamoDbClientTest {
 
         System.setProperty("aws.accessKeyId", "test1")
         System.setProperty("aws.secretKey", "test231")
-        dynamo = DynamoDbClient(amazonDynamoDBClient)
+        dynamo = HashedWebsiteRepository(amazonDynamoDBClient)
     }
 
     @Test

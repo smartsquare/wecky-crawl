@@ -6,10 +6,10 @@ import de.smartsquare.wecky.domain.HashedWebsite
 import org.slf4j.LoggerFactory
 import java.time.Instant
 
-class DynamoDbClient(val dynamoDB: AmazonDynamoDB) {
+class HashedWebsiteRepository(val dynamoDB: AmazonDynamoDB) {
 
     companion object Factory {
-        val log = LoggerFactory.getLogger(DynamoDbClient::class.java.simpleName)
+        val log = LoggerFactory.getLogger(HashedWebsiteRepository::class.java.simpleName)
         val tableName = "WebsiteHashes"
     }
 

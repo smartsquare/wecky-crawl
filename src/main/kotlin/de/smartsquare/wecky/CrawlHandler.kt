@@ -10,7 +10,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.smartsquare.wecky.crawler.WebsiteCrawler
 import de.smartsquare.wecky.crawler.WebsiteTracker
 import de.smartsquare.wecky.domain.Website
-import de.smartsquare.wecky.dynamo.DynamoDbClient
+import de.smartsquare.wecky.dynamo.HashedWebsiteRepository
 import org.slf4j.LoggerFactory
 import java.io.InputStream
 import java.io.OutputStream
@@ -41,7 +41,7 @@ class CrawlHandler : RequestStreamHandler {
                             .withRegion(Regions.EU_CENTRAL_1)
                             .build()
                 }
-        val dynamo = DynamoDbClient(amazonDynamoDB)
+        val dynamo = HashedWebsiteRepository(amazonDynamoDB)
 
         val crawler = WebsiteCrawler()
         val tracker = WebsiteTracker(dynamo)

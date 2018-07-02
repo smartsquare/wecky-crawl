@@ -2,7 +2,7 @@ package de.smartsquare.wecky.crawler
 
 import de.smartsquare.wecky.domain.HashedWebsite
 import de.smartsquare.wecky.domain.Website
-import de.smartsquare.wecky.dynamo.DynamoDbClient
+import de.smartsquare.wecky.dynamo.HashedWebsiteRepository
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 internal class WebsiteTrackerTest {
 
     @MockK
-    lateinit var dynamoDbClient: DynamoDbClient
+    lateinit var hashedWebsiteRepository: HashedWebsiteRepository
 
     @InjectMockKs
     lateinit var tracker: WebsiteTracker
@@ -20,7 +20,7 @@ internal class WebsiteTrackerTest {
     @BeforeEach
     fun setUp() {
         MockKAnnotations.init(this)
-        every { dynamoDbClient.write(any()) } just Runs
+        every { hashedWebsiteRepository.write(any()) } just Runs
     }
 
     @Test
@@ -29,11 +29,11 @@ internal class WebsiteTrackerTest {
         val hashedWebsite = HashedWebsite("4711", "foobar.de", "<html/>")
         val previousHashed = HashedWebsite("4711", "foobar.de", "<html/>")
 
-        every { dynamoDbClient.readItem(hashedWebsite.id) } returns previousHashed
+        every { hashedWebsiteRepository.readItem(hashedWebsite.id) } returns previousHashed
 
         tracker.track(website, hashedWebsite)
 
-        verify(exactly = 0) { dynamoDbClient.write(any()) }
+        verify(exactly = 0) { hashedWebsiteRepository.write(any()) }
     }
 
     @Test
@@ -42,10 +42,10 @@ internal class WebsiteTrackerTest {
         val hashedWebsite = HashedWebsite("4711", "foobar.de", "<html/>")
         val previousHashed = HashedWebsite("4711", "foobar.de", "<html><body/></html>")
 
-        every { dynamoDbClient.readItem(hashedWebsite.id) } returns previousHashed
+        every { hashedWebsiteRepository.readItem(hashedWebsite.id) } returns previousHashed
 
         tracker.track(website, hashedWebsite)
 
-        verify(exactly = 1) { dynamoDbClient.write(any()) }
+        verify(exactly = 1) { hashedWebsiteRepository.write(any()) }
     }
 }
