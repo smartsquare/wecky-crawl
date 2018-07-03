@@ -30,10 +30,10 @@ class CrawlHandler : RequestStreamHandler {
         val amazonDynamoDB =
                 if (dyndbLocal?.isNotEmpty() ?: false) {
                     log.info("Triggered local dev mode using local DynamoDB at [$dyndbLocal]")
-                    System.setProperty("aws.accessKeyId", "foo")
-                    System.setProperty("aws.secretKey", "bar")
+                    System.setProperty("aws.accessKeyId", "key")
+                    System.setProperty("aws.secretKey", "key2")
                     AmazonDynamoDBClient.builder()
-                            .withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration(dyndbLocal, "us-east-1"))
+                            .withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration(dyndbLocal, "eu-central-1"))
                             .build()
                 } else {
                     log.info("Using production DynamoDB at eu_central_1")
