@@ -34,6 +34,7 @@ class HashedWebsiteRepository(val dynamoDB: AmazonDynamoDB) {
         createInitialTable()
 
         val item = mapOf("id" to AttributeValue(hashedWebsite.id),
+                "websiteId" to AttributeValue(hashedWebsite.websiteId),
                 "url" to AttributeValue(hashedWebsite.url),
                 "content" to AttributeValue(hashedWebsite.content),
                 "hash" to AttributeValue(hashedWebsite.hash.toString()),
@@ -44,24 +45,24 @@ class HashedWebsiteRepository(val dynamoDB: AmazonDynamoDB) {
         log.info("Stored new snapshot of website [${hashedWebsite.id}]")
     }
 
-    fun readItem(id: String): HashedWebsite? {
+    fun readItem(websiteId: String): HashedWebsite? {
         createInitialTable()
 
-        val getItemRequest = GetItemRequest()
-                .withKey(mapOf("id" to AttributeValue(id)))
+        val attrValues = mapOf(":website_id" to AttributeValue(websiteId))
+        val scanReq = ScanRequest()
                 .withTableName(tableName)
+                .withFilterExpression("websiteId = :website_id")
+                .withExpressionAttributeValues(attrValues)
 
-        try {
-            val item = dynamoDB.getItem(getItemRequest).item ?: return null
-            return HashedWebsite(
-                    item.get("id")!!.s,
-                    item.get("url")!!.s,
-                    item.get("content")!!.s,
-                    item.get("hash")!!.s.toInt(),
-                    Instant.ofEpochMilli(item.get("crawlDate")!!.s.toLong()))
-        } catch (ex: ResourceNotFoundException) {
-            return null
-        }
+        val result = dynamoDB.scan(scanReq)
+        val item = result.items.firstOrNull() ?: return null
+        return HashedWebsite(
+                item.get("id")!!.s,
+                item.get("url")!!.s,
+                item.get("content")!!.s,
+                item.get("hash")!!.s.toInt(),
+                Instant.ofEpochMilli(item.get("crawlDate")!!.s.toLong()),
+                item.get("websiteId")!!.s)
     }
 
 
