@@ -23,6 +23,10 @@ class HashedWebsiteRepository(val dynamoDB: AmazonDynamoDB) {
                     .withKeySchema(KeySchemaElement("id", KeyType.HASH))
                     .withProvisionedThroughput(ProvisionedThroughput(
                             10, 10))
+                    //the stream gets consumed by wecky-notify
+                    .withStreamSpecification(StreamSpecification()
+                            .withStreamEnabled(true)
+                            .withStreamViewType(StreamViewType.NEW_IMAGE))
                     .withTableName(tableName)
 
             dynamoDB.createTable(request)
