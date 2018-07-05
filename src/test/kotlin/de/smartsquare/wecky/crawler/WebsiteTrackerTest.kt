@@ -26,8 +26,8 @@ internal class WebsiteTrackerTest {
     @Test
     fun do_nothing_for_unchanged_website() {
         val website = Website("foobar", "foobar.de")
-        val hashedWebsite = HashedWebsite("4711", "foobar.de", "<html/>")
-        val previousHashed = HashedWebsite("4711", "foobar.de", "<html/>")
+        val hashedWebsite = HashedWebsite("4711", "foobar.de", "<html/>", "diff")
+        val previousHashed = hashedWebsite.copy()
 
         every { hashedWebsiteRepository.findBy(hashedWebsite.websiteId, hashedWebsite.hashValue) } returns previousHashed
 
@@ -39,7 +39,7 @@ internal class WebsiteTrackerTest {
     @Test
     fun persist_and_publish_changed_website() {
         val website = Website("foobar", "foobar.de")
-        val hashedWebsite = HashedWebsite("4711", "foobar.de", "<html/>")
+        val hashedWebsite = HashedWebsite("4711", "foobar.de", "<html/>", "diff")
 
         every { hashedWebsiteRepository.findBy(hashedWebsite.websiteId, hashedWebsite.hashValue) } returns null
 

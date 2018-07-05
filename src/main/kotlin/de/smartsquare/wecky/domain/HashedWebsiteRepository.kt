@@ -5,6 +5,7 @@ import com.amazonaws.services.dynamodbv2.model.*
 import org.slf4j.LoggerFactory
 import java.time.Instant
 
+
 class HashedWebsiteRepository(val dynamoDB: AmazonDynamoDB) {
 
     companion object Factory {
@@ -12,14 +13,18 @@ class HashedWebsiteRepository(val dynamoDB: AmazonDynamoDB) {
         val tableName = "WebsiteHashes"
     }
 
-    fun createInitialTable() {
+    private fun createInitialTable() {
         try {
             dynamoDB.describeTable(tableName)
         } catch (ex: ResourceNotFoundException) {
             log.info("Attempting to create table [$tableName]; please wait...")
             val request = CreateTableRequest()
-                    .withAttributeDefinitions(AttributeDefinition("id", ScalarAttributeType.S))
-                    .withKeySchema(KeySchemaElement("id", KeyType.HASH))
+                    .withAttributeDefinitions(
+                            AttributeDefinition("websiteId", ScalarAttributeType.S),
+                            AttributeDefinition("crawlDate", ScalarAttributeType.N))
+                    .withKeySchema(
+                            KeySchemaElement("websiteId", KeyType.HASH),
+                            KeySchemaElement("crawlDate", KeyType.RANGE))
                     .withProvisionedThroughput(ProvisionedThroughput(
                             10, 10))
                     //the stream gets consumed by wecky-notify
@@ -36,16 +41,32 @@ class HashedWebsiteRepository(val dynamoDB: AmazonDynamoDB) {
     fun write(hashedWebsite: HashedWebsite) {
         createInitialTable()
 
-        val item = mapOf("id" to AttributeValue(hashedWebsite.id),
+        val item = mapOf(
                 "websiteId" to AttributeValue(hashedWebsite.websiteId),
                 "url" to AttributeValue(hashedWebsite.url),
                 "content" to AttributeValue(hashedWebsite.content),
+                "diff" to AttributeValue(hashedWebsite.diff),
                 "hashValue" to AttributeValue(hashedWebsite.hashValue.toString()),
-                "crawlDate" to AttributeValue(hashedWebsite.crawlDate.toEpochMilli().toString()))
+                "crawlDate" to AttributeValue().withN(hashedWebsite.crawlDate.toEpochMilli().toString()))
 
         dynamoDB.putItem(tableName, item)
 
-        log.info("Stored new snapshot of website [${hashedWebsite.id}]")
+        log.info("Stored new snapshot of website [${hashedWebsite.websiteId}]")
+    }
+
+    fun findLatest(websiteId: String): HashedWebsite? {
+        createInitialTable()
+
+        val query = QueryRequest()
+                .withTableName(tableName)
+                .withKeyConditionExpression("websiteId = :website_id")
+                .withScanIndexForward(false)
+                .withLimit(1)
+                .withExpressionAttributeValues(mapOf(":website_id" to AttributeValue(websiteId)))
+
+
+        val result = dynamoDB.query(query)
+        return itemOrNull(result.items)
     }
 
     fun findBy(websiteId: String, hash: Int): HashedWebsite? {
@@ -61,14 +82,18 @@ class HashedWebsiteRepository(val dynamoDB: AmazonDynamoDB) {
                 .withExpressionAttributeValues(attrValues)
 
         val result = dynamoDB.scan(scanReq)
-        val item = result.items.firstOrNull() ?: return null
+        return itemOrNull(result.items)
+    }
+
+    private fun itemOrNull(result: MutableList<MutableMap<String, AttributeValue>>): HashedWebsite? {
+        val item = result.firstOrNull() ?: return null
         return HashedWebsite(
-                item.get("id")!!.s,
+                item.get("websiteId")!!.s,
                 item.get("url")!!.s,
                 item.get("content")!!.s,
+                item.get("diff")!!.s,
                 item.get("hashValue")!!.s.toInt(),
-                Instant.ofEpochMilli(item.get("crawlDate")!!.s.toLong()),
-                item.get("websiteId")!!.s)
+                Instant.ofEpochMilli(item.get("crawlDate")!!.n.toLong()))
     }
 
 

@@ -2,6 +2,7 @@ package de.smartsquare.wecky
 
 import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
+import com.amazonaws.services.dynamodbv2.model.DeleteTableRequest
 import de.smartsquare.wecky.domain.HashedWebsite
 import de.smartsquare.wecky.domain.HashedWebsiteRepository
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -9,6 +10,8 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty
+import java.time.Instant
+import kotlin.test.assertEquals
 
 @DisabledIfSystemProperty(named = "ci-server", matches = "true")
 class HashedWebsiteRepositoryTest {
@@ -24,11 +27,13 @@ class HashedWebsiteRepositoryTest {
         System.setProperty("aws.accessKeyId", "test1")
         System.setProperty("aws.secretKey", "test231")
         repo = HashedWebsiteRepository(amazonDynamoDBClient)
+
+        amazonDynamoDBClient.deleteTable(DeleteTableRequest(HashedWebsiteRepository.tableName))
     }
 
     @Test
     fun should_write_object_to_dynamo() {
-        val hashWebsite = HashedWebsite("FOOBAR", "www.foobar.com", "<html/>")
+        val hashWebsite = HashedWebsite("FOOBAR", "www.foobar.com", "<html/>", "diff")
 
         repo!!.write(hashWebsite)
 
@@ -41,4 +46,22 @@ class HashedWebsiteRepositoryTest {
         val item = repo!!.findBy("notexisting", 4711)
         assertNull(item)
     }
+
+    @Test
+    fun should_find_latest_by_crawldate() {
+        val now = Instant.now()
+        val second = HashedWebsite("FOOBAR", "second", "second", "diff", crawlDate = now.minusSeconds(10))
+        val third = HashedWebsite("FOOBAR", "third", "third", "diff", crawlDate = now.minusSeconds(5))
+        val first = HashedWebsite("FOOBAR", "first", "first", "diff", crawlDate = now.minusSeconds(20))
+        val current = HashedWebsite("FOOBAR", "current", "current", "diff")
+
+        repo!!.write(second)
+        repo!!.write(third)
+        repo!!.write(first)
+
+        val item = repo!!.findLatest(current.websiteId)
+        assertNotNull(item)
+        assertEquals(third, item)
+    }
+
 }

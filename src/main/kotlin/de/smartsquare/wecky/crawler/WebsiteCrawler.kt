@@ -15,7 +15,7 @@ class WebsiteCrawler(val jsoup: JsoupWrapper = JsoupWrapper()) {
         log.info("Crawling website at [${website.url}]")
         val doc = jsoup.readWebPage(website.url)
         val docAsString = doc.toString()
-        return HashedWebsite(website.id, doc.location(), docAsString)
+        return HashedWebsite(website.id, doc.location(), docAsString, "")
     }
 
 }
