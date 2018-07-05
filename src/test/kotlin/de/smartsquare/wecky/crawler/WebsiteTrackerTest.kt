@@ -1,8 +1,8 @@
 package de.smartsquare.wecky.crawler
 
 import de.smartsquare.wecky.domain.HashedWebsite
+import de.smartsquare.wecky.domain.HashedWebsiteRepository
 import de.smartsquare.wecky.domain.Website
-import de.smartsquare.wecky.dynamo.HashedWebsiteRepository
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK

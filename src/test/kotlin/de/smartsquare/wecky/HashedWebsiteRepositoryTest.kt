@@ -3,7 +3,7 @@ package de.smartsquare.wecky
 import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import de.smartsquare.wecky.domain.HashedWebsite
-import de.smartsquare.wecky.dynamo.HashedWebsiteRepository
+import de.smartsquare.wecky.domain.HashedWebsiteRepository
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach

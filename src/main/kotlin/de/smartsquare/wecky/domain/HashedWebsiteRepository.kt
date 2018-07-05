@@ -1,8 +1,7 @@
-package de.smartsquare.wecky.dynamo
+package de.smartsquare.wecky.domain
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.model.*
-import de.smartsquare.wecky.domain.HashedWebsite
 import org.slf4j.LoggerFactory
 import java.time.Instant
 
