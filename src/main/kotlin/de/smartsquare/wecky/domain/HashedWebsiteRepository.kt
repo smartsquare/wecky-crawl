@@ -40,7 +40,7 @@ class HashedWebsiteRepository(val dynamoDB: AmazonDynamoDB) {
                 "websiteId" to AttributeValue(hashedWebsite.websiteId),
                 "url" to AttributeValue(hashedWebsite.url),
                 "content" to AttributeValue(hashedWebsite.content),
-                "hash" to AttributeValue(hashedWebsite.hash.toString()),
+                "hashValue" to AttributeValue(hashedWebsite.hashValue.toString()),
                 "crawlDate" to AttributeValue(hashedWebsite.crawlDate.toEpochMilli().toString()))
 
         dynamoDB.putItem(tableName, item)
@@ -48,13 +48,16 @@ class HashedWebsiteRepository(val dynamoDB: AmazonDynamoDB) {
         log.info("Stored new snapshot of website [${hashedWebsite.id}]")
     }
 
-    fun readItem(websiteId: String): HashedWebsite? {
+    fun findBy(websiteId: String, hash: Int): HashedWebsite? {
         createInitialTable()
 
-        val attrValues = mapOf(":website_id" to AttributeValue(websiteId))
+        val attrValues = mapOf(
+                ":website_id" to AttributeValue(websiteId),
+                //hash is a reserved keyword
+                ":hash_value" to AttributeValue(hash.toString()))
         val scanReq = ScanRequest()
                 .withTableName(tableName)
-                .withFilterExpression("websiteId = :website_id")
+                .withFilterExpression("websiteId = :website_id AND hashValue = :hash_value")
                 .withExpressionAttributeValues(attrValues)
 
         val result = dynamoDB.scan(scanReq)
@@ -63,7 +66,7 @@ class HashedWebsiteRepository(val dynamoDB: AmazonDynamoDB) {
                 item.get("id")!!.s,
                 item.get("url")!!.s,
                 item.get("content")!!.s,
-                item.get("hash")!!.s.toInt(),
+                item.get("hashValue")!!.s.toInt(),
                 Instant.ofEpochMilli(item.get("crawlDate")!!.s.toLong()),
                 item.get("websiteId")!!.s)
     }

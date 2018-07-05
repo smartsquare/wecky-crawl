@@ -13,12 +13,13 @@ class WebsiteTracker(val hashedWebsiteRepository: HashedWebsiteRepository) {
     }
 
     fun track(website: Website, newHashed: HashedWebsite) {
-        val oldHashed = hashedWebsiteRepository.readItem(newHashed.websiteId)
-        val changed = oldHashed?.hash != newHashed.hash
-
-        if (changed) {
-            log.info("Website [${website.id}] changed, writing new hash [${newHashed.hash}]")
-            hashedWebsiteRepository.write(newHashed)
+        val oldHashed = hashedWebsiteRepository.findBy(newHashed.websiteId, newHashed.hashValue)
+        if (oldHashed != null) {
+            log.info("Nothing changed on website [${website.id}]")
+            return
         }
+
+        log.info("Website [${website.id}] changed, writing new hash [${newHashed.hashValue}]")
+        hashedWebsiteRepository.write(newHashed)
     }
 }

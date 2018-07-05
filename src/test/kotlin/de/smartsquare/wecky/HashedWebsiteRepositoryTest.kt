@@ -7,13 +7,13 @@ import de.smartsquare.wecky.domain.HashedWebsiteRepository
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty
 
-@Disabled("Needs local dynamodb")
+@EnabledIfSystemProperty(named = "localTest", matches = "true")
 class HashedWebsiteRepositoryTest {
 
-    private var dynamo: HashedWebsiteRepository? = null
+    private var repo: HashedWebsiteRepository? = null
 
     @BeforeEach
     fun setUp() {
@@ -23,22 +23,22 @@ class HashedWebsiteRepositoryTest {
 
         System.setProperty("aws.accessKeyId", "test1")
         System.setProperty("aws.secretKey", "test231")
-        dynamo = HashedWebsiteRepository(amazonDynamoDBClient)
+        repo = HashedWebsiteRepository(amazonDynamoDBClient)
     }
 
     @Test
     fun should_write_object_to_dynamo() {
-        val hashWebsite = HashedWebsite("4711", "www.foobar.com", "<html/>")
+        val hashWebsite = HashedWebsite("FOOBAR", "www.foobar.com", "<html/>")
 
-        dynamo!!.write(hashWebsite)
+        repo!!.write(hashWebsite)
 
-        val item = dynamo!!.readItem("4711")
+        val item = repo!!.findBy("FOOBAR", hashWebsite.hashValue)
         assertNotNull(item)
     }
 
     @Test
     fun none_existing_item() {
-        val item = dynamo!!.readItem("notexisting")
+        val item = repo!!.findBy("notexisting", 4711)
         assertNull(item)
     }
 }
