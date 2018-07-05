@@ -8,11 +8,11 @@ phases:
   pre_build:
     commands:
       - echo Test started on `date`
-      - mvn clean compile test
+      - mvn clean compile test -DargLine="-Dci-server=true"
   build:
     commands:
       - echo Build started on `date`
-      - mvn package shade:shade
+      - mvn package shade:shade -DargLine="-Dci-server=true"
       - mv target/wecky-crawl-1.0.jar .
       - unzip wecky-crawl-1.0.jar
       - rm -rf target tst src buildspec.yml pom.xml wecky-crawl-1.0.jar

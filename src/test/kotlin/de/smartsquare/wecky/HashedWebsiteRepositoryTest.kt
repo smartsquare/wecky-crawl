@@ -8,9 +8,9 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.condition.EnabledIfSystemProperty
+import org.junit.jupiter.api.condition.DisabledIfSystemProperty
 
-@EnabledIfSystemProperty(named = "localTest", matches = "true")
+@DisabledIfSystemProperty(named = "ci-server", matches = "true")
 class HashedWebsiteRepositoryTest {
 
     private var repo: HashedWebsiteRepository? = null
