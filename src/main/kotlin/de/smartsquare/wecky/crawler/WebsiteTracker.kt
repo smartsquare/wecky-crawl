@@ -3,11 +3,10 @@ package de.smartsquare.wecky.crawler
 import com.github.difflib.text.DiffRowGenerator
 import de.smartsquare.wecky.CrawlHandler
 import de.smartsquare.wecky.domain.HashedWebsite
-import de.smartsquare.wecky.domain.HashedWebsiteRepository
 import org.slf4j.LoggerFactory
 
 
-class WebsiteTracker(val hashedWebsiteRepository: HashedWebsiteRepository) {
+class WebsiteTracker() {
 
     companion object Factory {
         val log = LoggerFactory.getLogger(CrawlHandler::class.java.simpleName)
@@ -21,19 +20,16 @@ class WebsiteTracker(val hashedWebsiteRepository: HashedWebsiteRepository) {
                 .build()
     }
 
-    fun track(newHashed: HashedWebsite) {
-        val oldHashed = hashedWebsiteRepository.findBy(newHashed.websiteId, newHashed.hashValue)
-        if (oldHashed != null) {
+    fun track(newHashed: HashedWebsite, latest: HashedWebsite?): HashedWebsite? {
+        if (latest?.hashValue == newHashed.hashValue) {
             log.info("Nothing changed on website [${newHashed.websiteId}]")
-            return
+            return null
         }
 
-        val latest = hashedWebsiteRepository.findLatest(newHashed.websiteId)
         val diff = latest?.content?.diffTo(newHashed.content) ?: ""
-
         val diffedHash = newHashed.copy(diff = diff)
         log.info("Website [${diffedHash.websiteId}] changed, writing new hash [${diffedHash.hashValue}]")
-        hashedWebsiteRepository.write(diffedHash)
+        return diffedHash
     }
 
     fun String.diffTo(other: String): String {

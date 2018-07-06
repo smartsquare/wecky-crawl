@@ -1,49 +1,32 @@
 package de.smartsquare.wecky.crawler
 
 import de.smartsquare.wecky.domain.HashedWebsite
-import de.smartsquare.wecky.domain.HashedWebsiteRepository
-import io.mockk.*
-import io.mockk.impl.annotations.InjectMockKs
-import io.mockk.impl.annotations.MockK
-import org.junit.jupiter.api.BeforeEach
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import kotlin.test.assertNull
 
 internal class WebsiteTrackerTest {
 
-    @MockK
-    lateinit var hashedWebsiteRepository: HashedWebsiteRepository
-
-    @InjectMockKs
-    lateinit var tracker: WebsiteTracker
-
-    @BeforeEach
-    fun setUp() {
-        MockKAnnotations.init(this)
-        every { hashedWebsiteRepository.write(any()) } just Runs
-    }
+    val tracker = WebsiteTracker()
 
     @Test
     fun do_nothing_for_unchanged_website() {
         val hashedWebsite = HashedWebsite("4711", "foobar.de", "<html/>", "")
         val previousHashed = hashedWebsite.copy(content = "<html>")
 
-        every { hashedWebsiteRepository.findBy(hashedWebsite.websiteId, hashedWebsite.hashValue) } returns previousHashed
-
-        tracker.track(hashedWebsite)
-
-        verify(exactly = 0) { hashedWebsiteRepository.write(any()) }
+        val newHashed = tracker.track(hashedWebsite, previousHashed)
+        assertNull(newHashed)
     }
 
     @Test
     fun persist_and_publish_changed_website() {
         val hashedWebsite = HashedWebsite("4711", "foobar.de", "<html/>", "")
-        val previousHashed = hashedWebsite.copy(content = "<html>")
+        val previousHashed = HashedWebsite("4711", "foobar.de", "<body/>", "")
 
-        every { hashedWebsiteRepository.findBy(hashedWebsite.websiteId, hashedWebsite.hashValue) } returns null
-        every { hashedWebsiteRepository.findLatest(hashedWebsite.websiteId) } returns previousHashed
+        val newHashed = tracker.track(hashedWebsite, previousHashed)
 
-        tracker.track(hashedWebsite)
-
-        verify(exactly = 1) { hashedWebsiteRepository.write(any()) }
+        assertThat(newHashed?.websiteId).isEqualTo(hashedWebsite.websiteId)
+        assertThat(newHashed?.content).isEqualTo(hashedWebsite.content)
+        assertThat(newHashed?.diff).isEqualTo("~&lt;body~**&lt;html**/&gt;")
     }
 }

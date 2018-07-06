@@ -41,12 +41,15 @@ class CrawlHandler : RequestStreamHandler {
                             .withRegion(Regions.EU_CENTRAL_1)
                             .build()
                 }
-        val dynamo = HashedWebsiteRepository(amazonDynamoDB)
+        val hashedWebsiteRepo = HashedWebsiteRepository(amazonDynamoDB)
 
         val crawler = WebsiteCrawler()
-        val tracker = WebsiteTracker(dynamo)
+        val tracker = WebsiteTracker()
 
         val hashedWebsite = crawler.crawlPage(website)
-        tracker.track(hashedWebsite)
+        val latest = hashedWebsiteRepo.findLatest(website.id)
+        tracker.track(hashedWebsite, latest)?.let {
+            hashedWebsiteRepo.write(it)
+        }
     }
 }
