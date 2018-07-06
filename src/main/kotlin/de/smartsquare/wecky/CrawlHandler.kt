@@ -26,7 +26,7 @@ class CrawlHandler : RequestStreamHandler {
         val website = mapper.readValue(input, Website::class.java)
 
         // used for local test with sam
-        val dyndbLocal = System.getenv("DYNDB_LOCAL")
+        val dyndbLocal = getEnv()
         val amazonDynamoDB =
                 if (dyndbLocal?.isNotEmpty() == true) {
                     log.info("Triggered local dev mode using local DynamoDB at [$dyndbLocal]")
@@ -45,11 +45,13 @@ class CrawlHandler : RequestStreamHandler {
 
         val crawler = WebsiteCrawler()
         val tracker = WebsiteTracker()
-
-        val hashedWebsite = crawler.crawlPage(website)
         val latest = hashedWebsiteRepo.findLatest(website.id)
-        tracker.track(hashedWebsite, latest)?.let {
-            hashedWebsiteRepo.write(it)
-        }
+
+        website
+                .let(crawler::crawlPage)
+                .let { tracker.track(it, latest) }
+                ?.let(hashedWebsiteRepo::write)
     }
+
+    private fun getEnv() = System.getenv("DYNDB_LOCAL") ?: System.getProperty("DYNDB_LOCAL")
 }
