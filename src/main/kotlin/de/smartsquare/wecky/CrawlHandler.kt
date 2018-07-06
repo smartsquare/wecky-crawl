@@ -28,7 +28,7 @@ class CrawlHandler : RequestStreamHandler {
         // used for local test with sam
         val dyndbLocal = System.getenv("DYNDB_LOCAL")
         val amazonDynamoDB =
-                if (dyndbLocal?.isNotEmpty() ?: false) {
+                if (dyndbLocal?.isNotEmpty() == true) {
                     log.info("Triggered local dev mode using local DynamoDB at [$dyndbLocal]")
                     System.setProperty("aws.accessKeyId", "key")
                     System.setProperty("aws.secretKey", "key2")
@@ -47,6 +47,6 @@ class CrawlHandler : RequestStreamHandler {
         val tracker = WebsiteTracker(dynamo)
 
         val hashedWebsite = crawler.crawlPage(website)
-        tracker.track(website, hashedWebsite)
+        tracker.track(hashedWebsite)
     }
 }

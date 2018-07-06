@@ -2,7 +2,6 @@ package de.smartsquare.wecky.crawler
 
 import de.smartsquare.wecky.domain.HashedWebsite
 import de.smartsquare.wecky.domain.HashedWebsiteRepository
-import de.smartsquare.wecky.domain.Website
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -25,25 +24,25 @@ internal class WebsiteTrackerTest {
 
     @Test
     fun do_nothing_for_unchanged_website() {
-        val website = Website("foobar", "foobar.de")
-        val hashedWebsite = HashedWebsite("4711", "foobar.de", "<html/>", "diff")
-        val previousHashed = hashedWebsite.copy()
+        val hashedWebsite = HashedWebsite("4711", "foobar.de", "<html/>", "")
+        val previousHashed = hashedWebsite.copy(content = "<html>")
 
         every { hashedWebsiteRepository.findBy(hashedWebsite.websiteId, hashedWebsite.hashValue) } returns previousHashed
 
-        tracker.track(website, hashedWebsite)
+        tracker.track(hashedWebsite)
 
         verify(exactly = 0) { hashedWebsiteRepository.write(any()) }
     }
 
     @Test
     fun persist_and_publish_changed_website() {
-        val website = Website("foobar", "foobar.de")
-        val hashedWebsite = HashedWebsite("4711", "foobar.de", "<html/>", "diff")
+        val hashedWebsite = HashedWebsite("4711", "foobar.de", "<html/>", "")
+        val previousHashed = hashedWebsite.copy(content = "<html>")
 
         every { hashedWebsiteRepository.findBy(hashedWebsite.websiteId, hashedWebsite.hashValue) } returns null
+        every { hashedWebsiteRepository.findLatest(hashedWebsite.websiteId) } returns previousHashed
 
-        tracker.track(website, hashedWebsite)
+        tracker.track(hashedWebsite)
 
         verify(exactly = 1) { hashedWebsiteRepository.write(any()) }
     }
