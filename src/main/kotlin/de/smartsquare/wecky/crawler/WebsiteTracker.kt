@@ -26,7 +26,7 @@ class WebsiteTracker() {
             return null
         }
 
-        val diff = latest?.content?.diffTo(newHashed.content) ?: ""
+        val diff = latest?.content?.diffTo(newHashed.content)
         val diffedHash = newHashed.copy(diff = diff)
         log.info("Website [${diffedHash.websiteId}] changed, writing new hash [${diffedHash.hashValue}]")
         return diffedHash

@@ -3,6 +3,7 @@ package de.smartsquare.wecky
 import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import com.amazonaws.services.dynamodbv2.model.DeleteTableRequest
+import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException
 import de.smartsquare.wecky.domain.HashedWebsite
 import de.smartsquare.wecky.domain.HashedWebsiteRepository
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -20,15 +21,19 @@ class HashedWebsiteRepositoryTest {
 
     @BeforeEach
     fun setUp() {
-        val amazonDynamoDBClient = AmazonDynamoDBClient.builder()
+        val dyndbClient = AmazonDynamoDBClient.builder()
                 .withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration("http://localhost:8000", "us-east-1"))
                 .build()
 
         System.setProperty("aws.accessKeyId", "test1")
         System.setProperty("aws.secretKey", "test231")
-        repo = HashedWebsiteRepository(amazonDynamoDBClient)
+        repo = HashedWebsiteRepository(dyndbClient)
 
-        amazonDynamoDBClient.deleteTable(DeleteTableRequest(HashedWebsiteRepository.tableName))
+        try {
+            dyndbClient.deleteTable(DeleteTableRequest(HashedWebsiteRepository.tableName))
+        } catch (ex: ResourceNotFoundException) {
+            // ignore non existing table
+        }
     }
 
     @Test
