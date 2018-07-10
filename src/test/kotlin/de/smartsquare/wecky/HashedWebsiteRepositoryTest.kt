@@ -1,5 +1,7 @@
 package de.smartsquare.wecky
 
+import cloud.localstack.docker.LocalstackDocker
+import cloud.localstack.docker.LocalstackDockerExtension
 import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import com.amazonaws.services.dynamodbv2.model.DeleteTableRequest
@@ -11,9 +13,11 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty
+import org.junit.jupiter.api.extension.ExtendWith
 import java.time.Instant
 import kotlin.test.assertEquals
 
+@ExtendWith(LocalstackDockerExtension::class)
 @DisabledIfSystemProperty(named = "ci-server", matches = "true")
 class HashedWebsiteRepositoryTest {
 
@@ -21,8 +25,9 @@ class HashedWebsiteRepositoryTest {
 
     @BeforeEach
     fun setUp() {
+        val dyndbLocal = LocalstackDocker.INSTANCE.endpointDynamoDB
         val dyndbClient = AmazonDynamoDBClient.builder()
-                .withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration("http://localhost:8000", "us-east-1"))
+                .withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration(dyndbLocal, "eu-central-1"))
                 .build()
 
         System.setProperty("aws.accessKeyId", "test1")

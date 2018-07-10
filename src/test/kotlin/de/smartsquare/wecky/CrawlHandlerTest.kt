@@ -1,5 +1,7 @@
 package de.smartsquare.wecky
 
+import cloud.localstack.docker.LocalstackDocker
+import cloud.localstack.docker.LocalstackDockerExtension
 import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient
 import com.amazonaws.services.dynamodbv2.model.DeleteTableRequest
@@ -10,7 +12,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty
+import org.junit.jupiter.api.extension.ExtendWith
 
+@ExtendWith(LocalstackDockerExtension::class)
 @DisabledIfSystemProperty(named = "ci-server", matches = "true")
 internal class CrawlHandlerTest {
 
@@ -20,7 +24,7 @@ internal class CrawlHandlerTest {
     @BeforeEach
     fun setUp() {
         handler = CrawlHandler()
-        val dyndbLocal = "http://localhost:8000"
+        val dyndbLocal = LocalstackDocker.INSTANCE.endpointDynamoDB
         System.setProperty("DYNDB_LOCAL", dyndbLocal)
         System.setProperty("aws.accessKeyId", "key")
         System.setProperty("aws.secretKey", "key2")
