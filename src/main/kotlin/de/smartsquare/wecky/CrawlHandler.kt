@@ -9,9 +9,9 @@ import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.smartsquare.wecky.crawler.WebsiteCrawler
-import de.smartsquare.wecky.crawler.WebsiteTracker
 import de.smartsquare.wecky.domain.HashedWebsiteRepository
 import de.smartsquare.wecky.domain.Website
+import de.smartsquare.wecky.tracker.WebsiteTracker
 import org.slf4j.LoggerFactory
 import java.io.InputStream
 import java.io.OutputStream
@@ -35,7 +35,7 @@ class CrawlHandler : RequestStreamHandler {
 
         website
                 .let(crawler::crawlPage)
-                .let { tracker.track(it, latest) }
+                .let { tracker.checkHash(it, latest) }
                 ?.let(hashedWebsiteRepo::write)
     }
 

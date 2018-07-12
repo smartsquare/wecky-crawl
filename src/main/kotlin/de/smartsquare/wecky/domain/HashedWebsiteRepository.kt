@@ -38,20 +38,18 @@ class HashedWebsiteRepository(val dynamoDB: AmazonDynamoDB) {
         }
     }
 
-    fun write(hashedWebsite: HashedWebsite) {
+    fun write(hashedWebsite: HashedWebsite): HashedWebsite {
         createInitialTable()
 
-        val values = mutableMapOf(
+        val values = mapOf(
                 "websiteId" to AttributeValue(hashedWebsite.websiteId),
                 "url" to AttributeValue(hashedWebsite.url),
-                "content" to AttributeValue(hashedWebsite.content),
                 "hashValue" to AttributeValue(hashedWebsite.hashValue.toString()),
                 "crawlDate" to AttributeValue().withN(hashedWebsite.crawlDate.toEpochMilli().toString()))
-        hashedWebsite.diff?.let { values.put("diff", AttributeValue(it)) }
 
         dynamoDB.putItem(tableName, values)
-
         log.info("Stored new snapshot of website [${hashedWebsite.websiteId}]")
+        return hashedWebsite
     }
 
     fun findLatest(websiteId: String): HashedWebsite? {
@@ -90,8 +88,6 @@ class HashedWebsiteRepository(val dynamoDB: AmazonDynamoDB) {
         return HashedWebsite(
                 item.get("websiteId")!!.s,
                 item.get("url")!!.s,
-                item.get("content")!!.s,
-                item.get("diff")?.s,
                 item.get("hashValue")!!.s.toInt(),
                 Instant.ofEpochMilli(item.get("crawlDate")!!.n.toLong()))
     }

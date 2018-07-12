@@ -43,7 +43,7 @@ class HashedWebsiteRepositoryTest {
 
     @Test
     fun should_write_object_to_dynamo() {
-        val hashWebsite = HashedWebsite("FOOBAR", "www.foobar.com", "<html/>", "diff")
+        val hashWebsite = HashedWebsite("FOOBAR", "www.foobar.com", "<html/>".hashCode())
 
         repo!!.write(hashWebsite)
 
@@ -60,10 +60,10 @@ class HashedWebsiteRepositoryTest {
     @Test
     fun should_find_latest_by_crawldate() {
         val now = Instant.now()
-        val second = HashedWebsite("FOOBAR", "second", "second", "diff", crawlDate = now.minusSeconds(10))
-        val third = HashedWebsite("FOOBAR", "third", "third", "diff", crawlDate = now.minusSeconds(5))
-        val first = HashedWebsite("FOOBAR", "first", "first", "diff", crawlDate = now.minusSeconds(20))
-        val current = HashedWebsite("FOOBAR", "current", "current", "diff")
+        val second = HashedWebsite("FOOBAR", "second", "second".hashCode(), crawlDate = now.minusSeconds(10))
+        val third = HashedWebsite("FOOBAR", "third", "third".hashCode(), crawlDate = now.minusSeconds(5))
+        val first = HashedWebsite("FOOBAR", "first", "first".hashCode(), crawlDate = now.minusSeconds(20))
+        val current = HashedWebsite("FOOBAR", "current", "current".hashCode())
 
         repo!!.write(second)
         repo!!.write(third)
