@@ -44,7 +44,7 @@ class HashedWebsiteRepository(val dynamoDB: AmazonDynamoDB) {
         val values = mapOf(
                 "websiteId" to AttributeValue(hashedWebsite.websiteId),
                 "url" to AttributeValue(hashedWebsite.url),
-                "hashValue" to AttributeValue(hashedWebsite.hashValue.toString()),
+                "hashValue" to AttributeValue().withN(hashedWebsite.hashValue.toString()),
                 "crawlDate" to AttributeValue().withN(hashedWebsite.crawlDate.toEpochMilli().toString()))
 
         dynamoDB.putItem(tableName, values)
@@ -73,7 +73,7 @@ class HashedWebsiteRepository(val dynamoDB: AmazonDynamoDB) {
         val attrValues = mapOf(
                 ":website_id" to AttributeValue(websiteId),
                 //hash is a reserved keyword
-                ":hash_value" to AttributeValue(hash.toString()))
+                ":hash_value" to AttributeValue().withN(hash.toString()))
         val scanReq = ScanRequest()
                 .withTableName(tableName)
                 .withFilterExpression("websiteId = :website_id AND hashValue = :hash_value")
@@ -88,7 +88,7 @@ class HashedWebsiteRepository(val dynamoDB: AmazonDynamoDB) {
         return HashedWebsite(
                 item.get("websiteId")!!.s,
                 item.get("url")!!.s,
-                item.get("hashValue")!!.s.toInt(),
+                item.get("hashValue")!!.n.toInt(),
                 Instant.ofEpochMilli(item.get("crawlDate")!!.n.toLong()))
     }
 
